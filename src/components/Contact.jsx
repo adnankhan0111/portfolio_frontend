@@ -17,51 +17,59 @@ const Contact = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validation
-    if (!formState.name || !formState.email || !formState.subject || !formState.message) {
-      setStatus({ type: 'error', message: 'Please fill all fields' });
-      return;
-    }
+  e.preventDefault();
+  setLoading(true);
+  setStatus({ type: '', message: '' });
 
-    setLoading(true);
-    setStatus({ type: '', message: '' });
+  try {
+    // 1. Backend API call - Database save
+    const API_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000/api/contact'
+      : 'https://adnan-portfolio-backend.up.railway.app/api/contact';
 
-    try {
-      // EmailJS send - YAHAN APNI ID's DAALO
-      const result = await emailjs.send(
-        'service_m0wbupd',    // ← Service ID yahan
-        'template_2lsgwuk',   // ← Template ID yahan
-        {
-          from_name: formState.name,
-          from_email: formState.email,
-          subject: formState.subject,
-          message: formState.message,
-        },
-        'N2Nxh_ANTZAtlS-Jf'     // ← Public Key yahan
-      );
+    const backendResponse = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formState),
+    });
 
-      if (result.status === 200) {
-        setStatus({ 
-          type: 'success', 
-          message: '✅ Message sent successfully! I\'ll get back to you soon.' 
-        });
-        setFormState({ name: '', email: '', subject: '', message: '' });
-        
-        // Auto clear success message after 5 seconds
-        setTimeout(() => setStatus({ type: '', message: '' }), 5000);
-      }
-    } catch (error) {
-      console.error('EmailJS Error:', error);
+    // 2. EmailJS - Email notification
+    const emailResult = await emailjs.send(
+      'YOUR_SERVICE_ID',
+      'YOUR_TEMPLATE_ID',
+      {
+        from_name: formState.name,
+        from_email: formState.email,
+        subject: formState.subject,
+        message: formState.message,
+      },
+      'YOUR_PUBLIC_KEY'
+    );
+
+    // Both successful
+    if (backendResponse.ok && emailResult.status === 200) {
       setStatus({ 
-        type: 'error', 
-        message: '❌ Failed to send message. Please try again.' 
+        type: 'success', 
+        message: 'Message sent successfully! I\'ll get back to you soon.' 
       });
-    } finally {
-      setLoading(false);
+      setFormState({ name: '', email: '', subject: '', message: '' });
+      setTimeout(() => setStatus({ type: '', message: '' }), 5000);
+    } else {
+      setStatus({ type: 'error', message: 'Something went wrong. Try again.' });
     }
-  };
+
+  } catch (error) {
+    console.error('Error:', error);
+    setStatus({ 
+      type: 'error', 
+      message: error.message.includes('Failed to fetch') 
+        ? 'Backend not reachable. Check Railway deployment.'
+        : 'Failed to send message. Try again.'
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const contactInfo = [
     { icon: FiMail, label: 'Email', value: 'adnan.khan@example.com', href: 'mailto:adnan.khan@example.com' },
