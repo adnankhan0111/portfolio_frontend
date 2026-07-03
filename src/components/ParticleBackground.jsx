@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import Particles from 'react-tsparticles';
-import { loadSlim } from 'tsparticles-slim';
+import Particles from '@tsparticles/react';
+import { loadSlim } from '@tsparticles/slim';
 
-const ParticleBackground = () => {
+const ParticleBackground = ({ darkMode }) => {
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine);
   }, []);
@@ -20,18 +20,21 @@ const ParticleBackground = () => {
             value: 60,
             density: {
               enable: true,
-              area: 800,
             },
           },
           color: {
-            value: ['#8b5cf6', '#6366f1', '#a78bfa', '#10b981'],
+            value: darkMode 
+              ? ['#8b5cf6', '#6366f1', '#a78bfa', '#10b981']
+              : ['#7c3aed', '#4f46e5', '#8b5cf6', '#059669'],
           },
           shape: {
             type: ['circle', 'triangle', 'polygon'],
-            polygon: { sides: 6 },
+            options: {
+              polygon: { sides: 6 },
+            },
           },
           opacity: {
-            value: { min: 0.1, max: 0.4 },
+            value: { min: 0.1, max: 0.5 },
             animation: {
               enable: true,
               speed: 0.5,
@@ -51,13 +54,9 @@ const ParticleBackground = () => {
           links: {
             enable: true,
             distance: 150,
-            color: '#8b5cf6',
-            opacity: 0.1,
+            color: darkMode ? '#8b5cf6' : '#7c3aed',
+            opacity: darkMode ? 0.1 : 0.15,
             width: 1,
-            triangles: {
-              enable: true,
-              opacity: 0.03,
-            },
           },
           move: {
             enable: true,
@@ -66,11 +65,6 @@ const ParticleBackground = () => {
             random: true,
             straight: false,
             outModes: 'bounce',
-            attract: {
-              enable: true,
-              rotateX: 600,
-              rotateY: 1200,
-            },
           },
           twinkle: {
             particles: {
@@ -81,19 +75,17 @@ const ParticleBackground = () => {
           },
         },
         interactivity: {
-          detectsOn: 'window',
           events: {
             onHover: {
               enable: true,
               mode: ['grab', 'bubble'],
             },
-            resize: true,
           },
           modes: {
             grab: {
               distance: 180,
               links: {
-                opacity: 0.3,
+                opacity: darkMode ? 0.3 : 0.4,
                 color: '#a78bfa',
               },
             },
